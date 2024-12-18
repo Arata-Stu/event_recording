@@ -1,15 +1,8 @@
 <?xml version="1.0"?>
 <launch>
-    <arg name="input_event_file" default=""/>
-    <arg name="bias_file" default=""/>
-    <arg name="record_file" default="/home/arata22/Documents/metavision/recording/event.raw"/>
-
-    <arg name="frame_rate_ms" default="33"/>
+    <arg name="param" default="$(find-pkg-share event_recording)/config/params.yaml"/>
 
     <node pkg="event_recording" exec="event_recorder" name="event_recorder" output="screen">
-        <param name="input_event_file" value="$(var input_event_file)"/>
-        <param name="bias_file" value="$(var bias_file)"/>
-        <param name="record_file" value="$(var record_file)"/>
-        <param name="frame_rate_ms" value="$(var frame_rate_ms)"/>
+        <param from="$(var param)"/>
     </node>
 </launch>

@@ -1,0 +1,6 @@
+/**:
+  ros__parameters:
+    input_event_file: ''
+    bias_file: ''
+    record_file: './recorded_events.raw'
+    frame_rate_ms: 33 ## ms
