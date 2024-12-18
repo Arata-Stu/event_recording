@@ -141,24 +141,36 @@ private:
 
     void start_recording() {
         try {
-            // レコードディレクトリに連番ディレクトリを作成
-            int dir_index = 1;
-            std::string record_path;
-            do {
-                record_path = record_directory_ + "/record_" + std::to_string(dir_index);
-                dir_index++;
-            } while (std::filesystem::exists(record_path));
+            // 現在時刻を取得してタイムスタンプを生成
+            auto now = std::chrono::system_clock::now();
+            auto duration = now.time_since_epoch();
+            auto seconds = std::chrono::duration_cast<std::chrono::seconds>(duration).count();
+            auto microseconds = std::chrono::duration_cast<std::chrono::microseconds>(duration).count() % 1000000;
 
-            std::filesystem::create_directories(record_path);
-            record_file_ = record_path + "/output.raw";
+            // 時刻を人間が読める形式に変換
+            std::time_t current_time = std::chrono::system_clock::to_time_t(now);
+            std::tm *local_time = std::localtime(&current_time);
+            char directory_name[100];
+            std::strftime(directory_name, sizeof(directory_name), "%Y%m%d_%H%M%S", local_time);
 
-            camera_.start_recording(record_file_);
-            RCLCPP_INFO(this->get_logger(), "Started recording to: %s", record_file_.c_str());
+            // レコードディレクトリの作成
+            std::string record_dir = record_directory_ + "/" + std::string(directory_name);
+            if (!std::filesystem::exists(record_dir)) {
+                std::filesystem::create_directories(record_dir);
+            }
+
+            // .rawファイル名の生成（同じタイムスタンプを使用）
+            std::string record_file = record_dir + "/" + std::to_string(seconds) + "_" + std::to_string(microseconds) + ".raw";
+
+            // カメラの録画開始
+            camera_.start_recording(record_file);
+            RCLCPP_INFO(this->get_logger(), "Started recording to: %s", record_file.c_str());
             is_recording_ = true;
         } catch (const Metavision::CameraException &e) {
             RCLCPP_ERROR(this->get_logger(), "Failed to start recording: %s", e.what());
         }
     }
+
 
     void stop_recording() {
         try {
