@@ -34,9 +34,10 @@ ament_target_dependencies(event_recorder rclcpp cv_bridge std_srvs MetavisionSDK
 install(TARGETS event_recorder
    DESTINATION lib/${PROJECT_NAME})
 
-install(
-   DIRECTORY launch/
-   DESTINATION share/${PROJECT_NAME}/launch
-   )
+install(DIRECTORY
+   launch
+   config
+   DESTINATION share/${PROJECT_NAME})  
+ 
 
 ament_package()
