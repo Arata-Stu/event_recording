@@ -2,5 +2,5 @@
   ros__parameters:
     input_event_file: ''
     bias_file: '/home/arata22/Documents/metavision/biases/biases.bias'
-    record_directory: '/home/arata22/Documents/metavision/recording'
-    frame_rate_ms: 33 ## ms
+    record_directory: '/home/arata22/recording/events'
+    frame_rate_ms: 20 ## ms
