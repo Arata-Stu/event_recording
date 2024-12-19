@@ -139,28 +139,34 @@ private:
         }
     }
 
-    void start_recording() {
+    void start_recording() 
+    {
         try {
-            // 現在時刻を取得してタイムスタンプを生成
+            // 現在時刻を取得
             auto now = std::chrono::system_clock::now();
             auto duration = now.time_since_epoch();
             auto seconds = std::chrono::duration_cast<std::chrono::seconds>(duration).count();
             auto microseconds = std::chrono::duration_cast<std::chrono::microseconds>(duration).count() % 1000000;
 
-            // 時刻を人間が読める形式に変換
-            std::time_t current_time = std::chrono::system_clock::to_time_t(now);
+            // JSTに変換
+            std::time_t current_time = std::chrono::system_clock::to_time_t(now + std::chrono::hours(9));
             std::tm *local_time = std::localtime(&current_time);
-            char directory_name[100];
-            std::strftime(directory_name, sizeof(directory_name), "%Y%m%d_%H%M%S", local_time);
+
+            // フォーマットされた時間文字列を生成
+            char formatted_time[100];
+            std::strftime(formatted_time, sizeof(formatted_time), "%Y%m%d_%H%M%S", local_time);
+
+            // マイクロ秒を追加してディレクトリ名を生成
+            std::string directory_name = std::string(formatted_time) + "_" + std::to_string(microseconds);
 
             // レコードディレクトリの作成
-            std::string record_dir = record_directory_ + "/" + std::string(directory_name);
+            std::string record_dir = record_directory_ + "/" + directory_name;
             if (!std::filesystem::exists(record_dir)) {
                 std::filesystem::create_directories(record_dir);
             }
 
-            // .rawファイル名の生成（同じタイムスタンプを使用）
-            std::string record_file = record_dir + "/" + std::to_string(seconds) + "_" + std::to_string(microseconds) + ".raw";
+            // .rawファイル名の生成
+            std::string record_file = record_dir + "/" + directory_name + ".raw";
 
             // カメラの録画開始
             camera_.start_recording(record_file);
@@ -170,6 +176,7 @@ private:
             RCLCPP_ERROR(this->get_logger(), "Failed to start recording: %s", e.what());
         }
     }
+
 
 
     void stop_recording() {
