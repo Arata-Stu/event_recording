@@ -156,8 +156,12 @@ private:
             char formatted_time[100];
             std::strftime(formatted_time, sizeof(formatted_time), "%Y%m%d_%H%M%S", local_time);
 
-            // マイクロ秒を追加してディレクトリ名を生成
-            std::string directory_name = std::string(formatted_time) + "_" + std::to_string(microseconds);
+            // マイクロ秒を6桁にゼロパディングして追加
+            std::ostringstream microseconds_stream;
+            microseconds_stream << std::setw(6) << std::setfill('0') << microseconds;
+
+            // ディレクトリ名を生成
+            std::string directory_name = std::string(formatted_time) + "_" + microseconds_stream.str();
 
             // レコードディレクトリの作成
             std::string record_dir = record_directory_ + "/" + directory_name;
@@ -176,6 +180,7 @@ private:
             RCLCPP_ERROR(this->get_logger(), "Failed to start recording: %s", e.what());
         }
     }
+
 
 
 
