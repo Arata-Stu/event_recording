@@ -34,7 +34,7 @@ public:
 
         // サービスの作成
         recording_service_ = this->create_service<std_srvs::srv::SetBool>(
-            "set_recording",
+            "event_set_recording",
             std::bind(&MetavisionViewerNode::handle_recording_service, this, std::placeholders::_1, std::placeholders::_2)
         );
 
@@ -148,8 +148,8 @@ private:
             auto seconds = std::chrono::duration_cast<std::chrono::seconds>(duration).count();
             auto microseconds = std::chrono::duration_cast<std::chrono::microseconds>(duration).count() % 1000000;
 
-            // JSTに変換
-            std::time_t current_time = std::chrono::system_clock::to_time_t(now + std::chrono::hours(9));
+            // 現在時刻をローカルタイムに変換
+            std::time_t current_time = std::chrono::system_clock::to_time_t(now);
             std::tm *local_time = std::localtime(&current_time);
 
             // フォーマットされた時間文字列を生成
@@ -170,7 +170,7 @@ private:
             }
 
             // .rawファイル名の生成
-            std::string record_file = record_dir + "/" + directory_name + ".raw";
+            std::string record_file = record_dir + "/frame_" + directory_name + ".raw";
 
             // カメラの録画開始
             camera_.start_recording(record_file);
@@ -180,6 +180,7 @@ private:
             RCLCPP_ERROR(this->get_logger(), "Failed to start recording: %s", e.what());
         }
     }
+
 
 
 
