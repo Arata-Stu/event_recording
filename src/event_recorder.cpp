@@ -2,7 +2,8 @@
 #include <metavision/sdk/driver/camera.h>
 #include <metavision/sdk/core/utils/cd_frame_generator.h>
 #include <opencv2/highgui.hpp>
-#include <std_srvs/srv/set_bool.hpp>
+// #include <std_srvs/srv/set_bool.hpp>
+#include <std_msgs/msg/bool.hpp>
 #include <filesystem>
 #include <mutex>
 
@@ -33,9 +34,15 @@ public:
         init_camera();
 
         // サービスの作成
-        recording_service_ = this->create_service<std_srvs::srv::SetBool>(
-            "event_set_recording",
-            std::bind(&MetavisionViewerNode::handle_recording_service, this, std::placeholders::_1, std::placeholders::_2)
+        // recording_service_ = this->create_service<std_srvs::srv::SetBool>(
+        //     "set_recording",
+        //     std::bind(&MetavisionViewerNode::handle_recording_service, this, std::placeholders::_1, std::placeholders::_2)
+        // );
+        // サブスクライバーの作成
+        recording_subscriber_ = this->create_subscription<std_msgs::msg::Bool>(
+            "recording_status", // トピック名
+            10,                  // キューサイズ
+            std::bind(&MetavisionViewerNode::handle_recording_control, this, std::placeholders::_1)
         );
 
         // フレーム更新用のタイマー
@@ -114,27 +121,42 @@ private:
         }
     }
 
-    void handle_recording_service(
-        const std::shared_ptr<std_srvs::srv::SetBool::Request> request,
-        std::shared_ptr<std_srvs::srv::SetBool::Response> response
-    ) {
-        if (request->data) {
+    // void handle_recording_service(
+    //     const std::shared_ptr<std_srvs::srv::SetBool::Request> request,
+    //     std::shared_ptr<std_srvs::srv::SetBool::Response> response
+    // ) {
+    //     if (request->data) {
+    //         if (!is_recording_) {
+    //             start_recording();
+    //             response->success = true;
+    //             response->message = "Recording started.";
+    //         } else {
+    //             response->success = false;
+    //             response->message = "Recording is already running.";
+    //         }
+    //     } else {
+    //         if (is_recording_) {
+    //             stop_recording();
+    //             response->success = true;
+    //             response->message = "Recording stopped.";
+    //         } else {
+    //             response->success = false;
+    //             response->message = "Recording is not currently running.";
+    //         }
+    //     }
+    // }
+    void handle_recording_control(const std_msgs::msg::Bool::SharedPtr msg) {
+        if (msg->data) {
             if (!is_recording_) {
                 start_recording();
-                response->success = true;
-                response->message = "Recording started.";
             } else {
-                response->success = false;
-                response->message = "Recording is already running.";
+                RCLCPP_WARN(this->get_logger(), "Recording is already running.");
             }
         } else {
             if (is_recording_) {
                 stop_recording();
-                response->success = true;
-                response->message = "Recording stopped.";
             } else {
-                response->success = false;
-                response->message = "Recording is not currently running.";
+                RCLCPP_WARN(this->get_logger(), "Recording is not currently running.");
             }
         }
     }
@@ -207,7 +229,9 @@ private:
     std::mutex cd_frame_mutex_;
     cv::Mat cd_frame_;
 
-    rclcpp::Service<std_srvs::srv::SetBool>::SharedPtr recording_service_;
+    // rclcpp::Service<std_srvs::srv::SetBool>::SharedPtr recording_service_;
+    rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr recording_subscriber_; // サブスクライバー
+
 };
 
 int main(int argc, char **argv) {

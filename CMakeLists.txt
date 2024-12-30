@@ -9,7 +9,8 @@ endif()
 
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
-find_package(std_srvs REQUIRED)
+# find_package(std_srvs REQUIRED)
+find_package(std_msgs REQUIRED)
 find_package(OpenCV REQUIRED)
 find_package(cv_bridge REQUIRED)
 find_package(MetavisionSDK COMPONENTS core driver ui REQUIRED)
@@ -29,7 +30,7 @@ target_link_libraries(event_recorder
    MetavisionSDK::driver 
    MetavisionSDK::ui
 )
-ament_target_dependencies(event_recorder rclcpp cv_bridge std_srvs MetavisionSDK)
+ament_target_dependencies(event_recorder rclcpp cv_bridge std_msgs MetavisionSDK)
 
 install(TARGETS event_recorder
    DESTINATION lib/${PROJECT_NAME})
