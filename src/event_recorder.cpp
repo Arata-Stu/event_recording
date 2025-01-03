@@ -2,7 +2,7 @@
 #include <metavision/sdk/driver/camera.h>
 #include <metavision/sdk/core/utils/cd_frame_generator.h>
 #include <opencv2/highgui.hpp>
-#include <std_msgs/msg/bool.hpp>
+#include <std_msgs/msg/string.hpp>
 #include <filesystem>
 #include <mutex>
 #include <iomanip>
@@ -17,15 +17,13 @@ public:
         this->declare_parameter<std::string>("bias_file", "");
         this->declare_parameter<std::string>("record_directory", "/tmp");
         this->declare_parameter<int>("frame_rate_ms", 33);
-        this->declare_parameter<int>("rotation_cycle_seconds", 300); // デフォルト5分
-
+        
         // --- パラメータ取得 ---
         input_event_file_ = this->get_parameter("input_event_file").as_string();
         bias_file_ = this->get_parameter("bias_file").as_string();
         record_directory_ = this->get_parameter("record_directory").as_string();
         timer_interval_ms_ = this->get_parameter("frame_rate_ms").as_int();
-        rotation_cycle_seconds_ = this->get_parameter("rotation_cycle_seconds").as_int();
-
+        
         // レコードディレクトリが存在しない場合は作成
         if (!std::filesystem::exists(record_directory_)) {
             std::filesystem::create_directories(record_directory_);
@@ -190,14 +188,6 @@ private:
             RCLCPP_INFO(this->get_logger(), "Started recording to: %s", record_file.c_str());
             is_recording_ = true;
 
-            // ---【変更点】録画開始と同時にローテーション用タイマーをスタート ---
-            // すでにタイマーがなければ作成する (多重起動防止)
-            if (!rotation_timer_) {
-                rotation_timer_ = this->create_wall_timer(
-                    std::chrono::seconds(rotation_cycle_seconds_),
-                    std::bind(&MetavisionViewerNode::rotate_recording_file, this)
-                );
-            }
         } catch (const Metavision::CameraException &e) {
             RCLCPP_ERROR(this->get_logger(), "Failed to start recording: %s", e.what());
         }
@@ -231,8 +221,7 @@ private:
 
     // --- メンバ変数 ---
     rclcpp::TimerBase::SharedPtr timer_;          // 表示用タイマー
-    rclcpp::TimerBase::SharedPtr rotation_timer_; // 周期ファイル切り替え用タイマー
-
+    
     int timer_interval_ms_;        // 表示フレーム更新のインターバル (ms)
     int rotation_cycle_seconds_;   // ファイル切り替え周期 (秒)
 
@@ -248,7 +237,7 @@ private:
     cv::Mat cd_frame_;
 
     // 録画開始/停止を受け取るサブスクライバー
-    rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr recording_subscriber_;
+    rclcpp::Subscription<std_msgs::msg::String>::SharedPtr recording_subscriber_;
 };
 
 int main(int argc, char **argv) {
