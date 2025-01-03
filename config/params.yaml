@@ -4,3 +4,4 @@
     bias_file: '/home/arata22/Documents/metavision/biases/biases.bias'
     record_directory: '/home/arata22/recording/events'
     frame_rate_ms: 33 ## ms
+    rotation_cycle_seconds: 300 ## s 秒
