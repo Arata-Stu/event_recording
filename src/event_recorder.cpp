@@ -200,11 +200,6 @@ private:
             RCLCPP_INFO(this->get_logger(), "Stopped recording.");
             is_recording_ = false;
 
-            // ---【変更点】タイマーを停止＆リセット (録画が終わったら必要ない) ---
-            if (rotation_timer_) {
-                rotation_timer_->cancel();
-                rotation_timer_.reset();
-            }
         } catch (const Metavision::CameraException &e) {
             RCLCPP_ERROR(this->get_logger(), "Failed to stop recording: %s", e.what());
         }
@@ -223,7 +218,6 @@ private:
     rclcpp::TimerBase::SharedPtr timer_;          // 表示用タイマー
     
     int timer_interval_ms_;        // 表示フレーム更新のインターバル (ms)
-    int rotation_cycle_seconds_;   // ファイル切り替え周期 (秒)
 
     std::string input_event_file_;
     std::string bias_file_;
