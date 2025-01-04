@@ -69,7 +69,6 @@ private:
         RCLCPP_INFO(this->get_logger(), "  bias_file: %s", bias_file_.c_str());
         RCLCPP_INFO(this->get_logger(), "  record_directory: %s", record_directory_.c_str());
         RCLCPP_INFO(this->get_logger(), "  frame_rate_ms: %d", timer_interval_ms_);
-        RCLCPP_INFO(this->get_logger(), "  rotation_cycle_seconds: %d", rotation_cycle_seconds_);
         RCLCPP_INFO(this->get_logger(), "===========================================");
     }
 
