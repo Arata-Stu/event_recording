@@ -17,12 +17,15 @@ public:
         this->declare_parameter<std::string>("bias_file", "");
         this->declare_parameter<std::string>("record_directory", "/tmp");
         this->declare_parameter<int>("frame_rate_ms", 33);
+        this->declare_parameter<bool>("rotate_180", false);
+
         
         // --- パラメータ取得 ---
         input_event_file_ = this->get_parameter("input_event_file").as_string();
         bias_file_ = this->get_parameter("bias_file").as_string();
         record_directory_ = this->get_parameter("record_directory").as_string();
         timer_interval_ms_ = this->get_parameter("frame_rate_ms").as_int();
+        rotate_180_ = this->get_parameter("rotate_180").as_bool();
         
         // レコードディレクトリが存在しない場合は作成
         if (!std::filesystem::exists(record_directory_)) {
@@ -123,10 +126,17 @@ private:
     void timer_callback() {
         std::lock_guard<std::mutex> lock(cd_frame_mutex_);
         if (!cd_frame_.empty()) {
-            cv::imshow("CD Events", cd_frame_);
+            cv::Mat display_frame = cd_frame_.clone(); // コピーを作成
+            
+            if (rotate_180_) {
+                cv::rotate(display_frame, display_frame, cv::ROTATE_180);
+            }
+
+            cv::imshow("CD Events", display_frame);
             cv::waitKey(1);
         }
     }
+
 
     // --- サブスクライバーから録画開始/停止を受け取る ---
     void handle_recording_control(const std_msgs::msg::String::SharedPtr msg) 
@@ -221,6 +231,7 @@ private:
     std::string input_event_file_;
     std::string bias_file_;
     std::string record_directory_;
+    bool rotate_180_;
 
     bool is_recording_ = false;
 
